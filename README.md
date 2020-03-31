@@ -7,7 +7,7 @@ Today i have setup the server and also added CSGO then used docker version of th
 ## Docker version
 For counter strike 1.6 Is from "LINK here" then i added some more stuff to fit kubernetes here is the repo "LINK"
 
-Counter strike go i have not played before but used the docker image from "LINK"
+Counter strike go i have not played before but used the docker image from https://github.com/mattiashem/counter-strike-docker
 
 
 
