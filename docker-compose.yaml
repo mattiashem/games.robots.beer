@@ -1,0 +1,9 @@
+version: '3'
+services:
+  games-robots-beer:
+    build: .
+    image: mattiashem/games-robots-beer
+    volumes:
+      - ./page:/usr/share/nginx/html
+    ports:
+      - 8080:80
