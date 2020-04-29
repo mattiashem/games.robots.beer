@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2016-02-18T18:52:05Z
+  name: csgo-admin
+  namespace: cs
+data:
+  admins_simple.ini: |
+    "STEAM_0:1:978447" "z"
+    "STEAM_0:0:3314466" "z"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: csgo-deployment
+  labels:
+    app: csgo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csgo
+  template:
+    metadata:
+      labels:
+        app: csgo
+    spec:
+      containers:
+      - name: csgo
+        image: cm2network/csgo:sourcemod
+        env:
+        - name: SRCDS_RCONPW
+          value: "akdlassd77hjakshdkj"
+        - name: SRCDS_PW
+          value: "matte"
+        - name: SRCDS_PORT
+          value: "27016"
+        - name: SRCDS_FPSMAX
+          value: "300"
+        - name: SRCDS_TICKRATE
+          value: "128"
+        - name: SRCDS_MAXPLAYERS
+          value: "14"
+        - name: SRCDS_STARTMAP
+          value: "de_dust2"
+        - name: SRCDS_REGION
+          value: "3"
+        - name: SRCDS_MAPGROUP
+          value: "mg_active"
+        - name: SRCDS_TOKEN
+          value: "A0D0B622336A2CD1D0D31691463D4235"          
+        volumeMounts:
+        - name: config-volume
+          mountPath: /home/steam/csgo-dedicated/csgo/addons/sourcemod/configs/admins_simple.ini
+          subPath: admins_simple.ini
+  
+        ports:
+          - containerPort: 27016
+          - containerPort: 27016
+            protocol: UDP
+      nodeSelector:
+        cpu: amd64
+      volumes:
+      - name: config-volume
+        configMap:
+          # Provide the name of the ConfigMap containing the files you want
+          # to add to the container
+          name: csgo-admin
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: csgo-service
+spec:
+  type: NodePort
+  selector:
+    app: csgo
+  ports:
+  - protocol: UDP
+    nodePort: 32220
+    port: 27016
+    targetPort: 27016
+
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: csgo-service-tcp
+spec:
+  type: NodePort
+  selector:
+    app: csgo
+  ports:
+  - protocol: TCP
+    nodePort: 32221
+    port: 27016
+    targetPort: 27016

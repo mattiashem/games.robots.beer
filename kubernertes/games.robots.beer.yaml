@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grb-deployment
+  labels:
+    app: grb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grb
+  template:
+    metadata:
+      labels:
+        app: grb
+    spec:
+      containers:
+      - name: grb
+        image: mattiashem/games-robots-beer
+        ports:
+          - containerPort: 80
+      nodeSelector:
+        cpu: amd64
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: grb-service-ingress
+spec:
+  type: ClusterIP
+  selector:
+    app: grb
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: "grb-ingress"
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/rule-type: "PathPrefixStrip"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/tls-acme: "true"
+spec:
+  tls:
+  - hosts:
+    - games.robots.beer
+    secretName: ha
+  rules:
+    - host: games.robots.beer
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: grb-service-ingress
+              servicePort: 80
+
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: grb-cert
+spec:
+  commonName: games.robots.beer
+  secretName: grb-cert
+  issuerRef:
+    name: letsencrypt              
